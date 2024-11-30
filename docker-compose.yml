@@ -22,7 +22,7 @@ services:
     healthcheck:
       test: [
         "CMD-SHELL",
-        "pg_isready -h localhost -U ${DATASOURCE_USERNAME} -d ${DATASOURCE_DATABASE}",
+        "pg_isready -h localhost -p 5433 -U ${DATASOURCE_USERNAME} -d ${DATASOURCE_DATABASE}",
       ]
       interval: 10s
       retries: 5
