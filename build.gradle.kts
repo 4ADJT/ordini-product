@@ -16,6 +16,7 @@ java {
 val springdocVersion = "2.6.0"
 val mapstructVersion = "1.6.3"
 val mapstructLombokBindingVersion = "0.2.0"
+val awsSdkVersion = "3.0.0"
 
 configurations {
     compileOnly {
@@ -28,6 +29,7 @@ repositories {
 }
 
 dependencies {
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSdkVersion")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
