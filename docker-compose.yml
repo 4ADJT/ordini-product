@@ -1,0 +1,53 @@
+networks:
+  ordini_product_network:
+    driver: bridge
+
+volumes:
+  ordini_product_db_data:
+
+services:
+  postgresdb:
+    image: postgres:latest
+    container_name: ordini_postgres_product
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+      POSTGRES_DB: ${DATASOURCE_DATABASE}
+    ports:
+      - "5433:5433"
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "pg_isready -h localhost -U ${DATASOURCE_USERNAME} -d ${DATASOURCE_DATABASE}",
+      ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      - ordini_product_network
+    volumes:
+      - ordini_product_db_data:/var/lib/postgresql/data
+
+  app:
+    container_name: ordini_product
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    environment:
+      #      JAVA_OPTS: "-Xms512m -Xmx1024m"
+      DATASOURCE_URL: ${DATASOURCE_URL}
+      DATASOURCE_USERNAME: ${DATASOURCE_USERNAME}
+      DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      SERVER_PORT: ${SERVER_PORT}
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    networks:
+      - ordini_product_network
