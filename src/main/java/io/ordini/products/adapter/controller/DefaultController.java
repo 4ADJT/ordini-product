@@ -1,27 +1,26 @@
 package io.ordini.products.adapter.controller;
 
+import io.ordini.products.adapter.gateway.bucket.GetBucketFileList;
+import io.ordini.products.application.Files.FileService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/")
+@AllArgsConstructor
 public class DefaultController {
 
-  private final S3Client s3Client;
-  private static final String BUCKET_NAME = "ordini";
-
-  public DefaultController(S3Client s3Client) {
-    this.s3Client = s3Client;
-  }
+  private final GetBucketFileList getBucketFileList;
+  private FileService fileService;
 
   private record BodyResponse(String status) {
   }
@@ -36,18 +35,21 @@ public class DefaultController {
 
   @GetMapping("/bucket/objects")
   @Operation(summary = "List all objects in the bucket")
-  public ResponseEntity<List<String>> listObjectsInBucket() {
-    ListObjectsV2Request request = ListObjectsV2Request.builder()
-        .bucket(BUCKET_NAME)
-        .prefix("products")
-        .build();
+  public ResponseEntity<Map<String, String>> listObjectsInBucket() {
 
-    List<String> objectKeys = s3Client.listObjectsV2(request)
-        .contents()
-        .stream()
-        .map(S3Object -> S3Object.key().replace("products/", ""))
-        .collect(Collectors.toList());
 
-    return ResponseEntity.ok(objectKeys);
+      // Processa os arquivos e obtém o conteúdo no mapa
+      Map<String, String> fileContents = fileService.processFilesAndReturnContents();
+
+      // Exibe os arquivos e seus conteúdos
+      fileContents.forEach((fileName, content) -> {
+        System.out.println("Arquivo: " + fileName);
+        System.out.println("Conteúdo:");
+        System.out.println(content);
+        System.out.println("------------------------");
+      });
+
+
+    return ResponseEntity.status(200).body(fileContents);
   }
 }
