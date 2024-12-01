@@ -1,7 +1,11 @@
-package io.ordini.products.application.Files;
+package io.ordini.products.application.files;
 
+import io.ordini.products.adapter.gateway.bucket.GetBucketFileContent;
 import io.ordini.products.adapter.gateway.bucket.GetBucketFileList;
+import io.ordini.products.domain.exception.BucketException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -10,24 +14,27 @@ import java.util.Set;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class FileService {
 
   private GetBucketFileList getBucketFileList;
+  private GetBucketFileContent getBucketFileContent;
 
   public Map<String, String> processFilesAndReturnContents() {
-    // Obtém a lista de arquivos do bucket
+
     Set<String> fileList = getBucketFileList.getBucketFileList();
     Map<String, String> fileContents = new HashMap<>();
 
     fileList.forEach(fileName -> {
       try {
-        // Captura o conteúdo do arquivo
-        String fileContent = getBucketFileList.getFileContent(fileName);
-        // Adiciona ao mapa
+
+        String fileContent = getBucketFileContent.getFileContent(fileName);
+
         fileContents.put(fileName, fileContent);
       } catch (RuntimeException e) {
-        // Exibe erros, mas continua processando os outros arquivos
-        System.err.println("Erro ao processar o arquivo '" + fileName + "': " + e.getMessage());
+        log.error("Erro ao processar o arquivo '" + fileName + "': " + e.getMessage());
+        throw new BucketException("Erro ao processar o arquivo '" + fileName + "': " + e.getMessage(),
+            HttpStatus.BAD_REQUEST);
       }
     });
 

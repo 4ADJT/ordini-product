@@ -1,7 +1,7 @@
 package io.ordini.products.adapter.controller;
 
 import io.ordini.products.adapter.gateway.bucket.GetBucketFileList;
-import io.ordini.products.application.Files.FileService;
+import io.ordini.products.application.files.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
