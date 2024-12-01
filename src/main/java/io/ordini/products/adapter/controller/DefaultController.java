@@ -23,29 +23,26 @@ public class DefaultController {
   private record BodyResponse(String status) {
   }
 
-  private final BodyResponse bodyResponse = new BodyResponse("ok");
-
   @GetMapping
   @Operation(hidden = true)
   public ResponseEntity<BodyResponse> health() {
-    return ResponseEntity.status(HttpStatus.OK).body(bodyResponse);
+    return ResponseEntity.status(HttpStatus.OK).body(new BodyResponse("ok"));
   }
 
   @GetMapping("/bucket/objects")
   @Operation(summary = "List all objects in the bucket")
-  public ResponseEntity<Map<String, String>> listObjectsInBucket() {
+  public ResponseEntity<Map<String, Map<String, Object>> > listObjectsInBucket() {
 
+    // Processa os arquivos e obtém o conteúdo no mapa
+    Map<String, Map<String, Object>> fileContents = fileService.processFilesAndContent();
 
-      // Processa os arquivos e obtém o conteúdo no mapa
-      Map<String, String> fileContents = fileService.processFilesAndReturnContents();
-
-      // Exibe os arquivos e seus conteúdos
-      fileContents.forEach((fileName, content) -> {
-        System.out.println("Arquivo: " + fileName);
-        System.out.println("Conteúdo:");
-        System.out.println(content);
-        System.out.println("------------------------");
-      });
+    // Exibe os arquivos e seus conteúdos
+    fileContents.forEach((fileName, content) -> {
+      System.out.println("Arquivo: " + fileName);
+      System.out.println("Conteúdo:");
+      System.out.println(content);
+      System.out.println("------------------------");
+    });
 
 
     return ResponseEntity.status(200).body(fileContents);

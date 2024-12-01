@@ -26,6 +26,8 @@ public class ProductModel {
 
   private Integer stock;
 
+  private String currency;
+
   private String sourceFile;
 
   private String createdAt;
@@ -44,6 +46,7 @@ public class ProductModel {
     validatePrice();
     validateStock();
     validateSourceFile();
+    validateCurrency();
   }
 
   private void validateName() {
@@ -79,6 +82,12 @@ public class ProductModel {
   private void validateSourceFile() {
     if (sourceFile == null || sourceFile.trim().isEmpty()) {
       throw new ModelValidationException("O arquivo de origem não pode ser nulo ou vazio.", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private void validateCurrency() {
+    if (currency == null || currency.trim().isEmpty()) {
+      throw new ModelValidationException("O tipo de moeda deve ser definida.", HttpStatus.BAD_REQUEST);
     }
   }
 

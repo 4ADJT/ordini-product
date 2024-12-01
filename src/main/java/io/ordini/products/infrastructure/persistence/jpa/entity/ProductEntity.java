@@ -34,6 +34,9 @@ public class ProductEntity {
   @Column(nullable = false)
   private Integer stock;
 
+  @Column(name = "currency", nullable = false, length = 3)
+  private String currency;
+
   @Column(name = "source_file", length = 255)
   private String sourceFile;
 

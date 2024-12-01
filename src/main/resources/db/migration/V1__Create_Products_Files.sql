@@ -7,6 +7,7 @@ CREATE TABLE products
     description TEXT,
     price       NUMERIC(10, 2) NOT NULL CHECK (price > 0),
     stock       INT            NOT NULL CHECK (stock >= 0),
+    currency    VARCHAR(3)     NOT NULL,
     source_file VARCHAR(255),
     created_at  TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP        DEFAULT CURRENT_TIMESTAMP
