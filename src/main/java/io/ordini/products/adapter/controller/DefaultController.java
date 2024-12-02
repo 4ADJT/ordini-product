@@ -1,7 +1,7 @@
 package io.ordini.products.adapter.controller;
 
-import io.ordini.products.adapter.gateway.bucket.GetBucketFileList;
 import io.ordini.products.application.files.FileService;
+import io.ordini.products.domain.repository.IProcessedFileRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +17,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class DefaultController {
 
-  private final GetBucketFileList getBucketFileList;
   private FileService fileService;
+  private IProcessedFileRepository processedFileRepository;
 
   private record BodyResponse(String status) {
   }
@@ -33,17 +33,7 @@ public class DefaultController {
   @Operation(summary = "List all objects in the bucket")
   public ResponseEntity<Map<String, Map<String, Object>> > listObjectsInBucket() {
 
-    // Processa os arquivos e obtém o conteúdo no mapa
-    Map<String, Map<String, Object>> fileContents = fileService.processFilesAndContent();
-
-    // Exibe os arquivos e seus conteúdos
-    fileContents.forEach((fileName, content) -> {
-      System.out.println("Arquivo: " + fileName);
-      System.out.println("Conteúdo:");
-      System.out.println(content);
-      System.out.println("------------------------");
-    });
-
+    Map<String, Map<String, Object>> fileContents = fileService.getFilesAndContent();
 
     return ResponseEntity.status(200).body(fileContents);
   }
