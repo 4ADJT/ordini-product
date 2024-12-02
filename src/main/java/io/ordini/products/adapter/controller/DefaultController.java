@@ -2,6 +2,7 @@ package io.ordini.products.adapter.controller;
 
 import io.ordini.products.application.files.FileService;
 import io.ordini.products.domain.repository.IProcessedFileRepository;
+import io.ordini.products.infrastructure.batch.ProductsBatchConfiguration;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ public class DefaultController {
 
   private FileService fileService;
   private IProcessedFileRepository processedFileRepository;
+  private ProductsBatchConfiguration productsBatchConfiguration;
 
   private record BodyResponse(String status) {
   }
@@ -34,6 +36,7 @@ public class DefaultController {
   public ResponseEntity<Map<String, Map<String, Object>> > listObjectsInBucket() {
 
     Map<String, Map<String, Object>> fileContents = fileService.getFilesAndContent();
+    productsBatchConfiguration.runJobsForAllFiles();
 
     return ResponseEntity.status(200).body(fileContents);
   }

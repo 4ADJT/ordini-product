@@ -15,6 +15,7 @@ public class ProductProcessor implements ItemProcessor<ProductModel, ProductEnti
   @Override
   public ProductEntity process(ProductModel productModel) throws Exception {
 
+
     return productMapper.toEntity(productModel);
 
   }
