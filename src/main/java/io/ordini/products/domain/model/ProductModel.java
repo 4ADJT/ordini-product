@@ -5,9 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -30,9 +32,9 @@ public class ProductModel {
 
   private String sourceFile;
 
-  private String createdAt;
+  private LocalDateTime createdAt;
 
-  private String updatedAt;
+  private LocalDateTime updatedAt;
 
   public static ProductModel buildAndValidate(ProductModelBuilder builder) {
     ProductModel model = builder.build();
@@ -45,7 +47,6 @@ public class ProductModel {
     validateDescription();
     validatePrice();
     validateStock();
-    validateSourceFile();
     validateCurrency();
   }
 
@@ -76,12 +77,6 @@ public class ProductModel {
     }
     if (stock < 0) {
       throw new ModelValidationException("O estoque não pode ser inferior a zero.", HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  private void validateSourceFile() {
-    if (sourceFile == null || sourceFile.trim().isEmpty()) {
-      throw new ModelValidationException("O arquivo de origem não pode ser nulo ou vazio.", HttpStatus.BAD_REQUEST);
     }
   }
 
