@@ -8,9 +8,9 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface ProcessedFileMapper {
 
-  ProcessedFileModel map(ProcessedFileEntity entity);
+  ProcessedFileModel toModel(ProcessedFileEntity entity);
 
   @InheritConfiguration
-  ProcessedFileEntity map(ProcessedFileModel model);
+  ProcessedFileEntity toEntity(ProcessedFileModel model);
 
 }
