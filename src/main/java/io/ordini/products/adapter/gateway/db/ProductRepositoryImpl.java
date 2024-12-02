@@ -5,8 +5,11 @@ import io.ordini.products.domain.exception.DatabaseException;
 import io.ordini.products.domain.model.ProductModel;
 import io.ordini.products.domain.repository.IProductRepository;
 import io.ordini.products.infrastructure.persistence.jpa.db.IProductJpaRepository;
+import io.ordini.products.infrastructure.persistence.jpa.entity.ProductEntity;
 import lombok.AllArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
@@ -34,5 +37,13 @@ public class ProductRepositoryImpl implements IProductRepository {
     } catch (Exception e) {
       throw new DatabaseException("Erro ao buscar o produto.", HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @Override
+  public Page<ProductModel> findAllByName(String name, Pageable pageable) {
+    Page<ProductEntity> products = repository.findAllByName(name, pageable);
+
+    return products.map(mapper::toModel);
+
   }
 }
