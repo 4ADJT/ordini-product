@@ -132,7 +132,7 @@ public class ProductsBatchConfiguration {
 
     return s3Objects.stream()
         .collect(Collectors.toMap(
-            obj -> "file" + counter.getAndIncrement(), // Identificadores únicos
+            obj -> "file" + counter.getAndIncrement(),
             obj -> new InputStreamResource(
                 s3Client.getObject(builder -> builder.bucket(BUCKET_NAME).key(obj.key()))
             ) {
