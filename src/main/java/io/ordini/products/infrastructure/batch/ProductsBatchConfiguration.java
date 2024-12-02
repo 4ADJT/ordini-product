@@ -19,13 +19,22 @@ import org.springframework.batch.item.ItemWriter;
 
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 import org.springframework.transaction.PlatformTransactionManager;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.S3Object;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @AllArgsConstructor
@@ -33,6 +42,8 @@ public class ProductsBatchConfiguration {
   public final ProductMapper productMapper;
 
   private final S3Template s3Template;
+
+  private final S3Client s3Client;
 
   private static final String BUCKET_NAME = "ordini";
   private static final String PREFIX = "products";
@@ -64,22 +75,46 @@ public class ProductsBatchConfiguration {
 
   @Bean
   public ItemReader<ProductModel> productsReader() {
+    MultiResourceItemReader<ProductModel> multiResourceItemReader = new MultiResourceItemReader<>();
 
-    Resource s3Resource = s3Template.download("ordini", "products/List1.csv");
-    if (!s3Resource.exists() || !s3Resource.isReadable()) {
-      throw new IllegalArgumentException("O recurso do S3 não está acessível ou não existe: /products/List1.csv");
-    }
+    List<Resource> resources = getResourcesFromS3();
 
-    return new FlatFileItemReaderBuilder<ProductModel>()
-        .name("productsReader")
-        .resource(s3Resource)
+    multiResourceItemReader.setResources(resources.toArray(new Resource[0]));
+
+    FlatFileItemReader<ProductModel> flatFileItemReader = new FlatFileItemReaderBuilder<ProductModel>()
+        .name("productFileReader")
         .linesToSkip(1)
         .delimited()
         .delimiter(";")
         .names("name", "description", "price", "stock", "currency")
         .targetType(ProductModel.class)
-
         .build();
+
+    multiResourceItemReader.setDelegate(flatFileItemReader);
+    return multiResourceItemReader;
+  }
+
+  private List<Resource> getResourcesFromS3() {
+    ListObjectsV2Request request = ListObjectsV2Request.builder()
+        .bucket(BUCKET_NAME)
+        .prefix(PREFIX)
+        .build();
+
+    return s3Client.listObjectsV2(request)
+        .contents()
+        .stream()
+        .map(S3Object::key)
+        .map(key -> {
+          return new InputStreamResource(
+              s3Client.getObject(builder -> builder.bucket(BUCKET_NAME).key(key))
+          ) {
+            @Override
+            public String getFilename() {
+              return key;
+            }
+          };
+        })
+        .collect(Collectors.toList());
   }
 
   @Bean

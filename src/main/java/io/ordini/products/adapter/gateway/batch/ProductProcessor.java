@@ -12,9 +12,10 @@ import org.springframework.stereotype.Component;
 public class ProductProcessor implements ItemProcessor<ProductModel, ProductEntity> {
   public final ProductMapper productMapper;
 
+
   @Override
   public ProductEntity process(ProductModel productModel) throws Exception {
-    productModel.setSourceFile("List1.csv");
+    productModel.setSourceFile(productModel.getSourceFile());
     return productMapper.toEntity(productModel);
 
   }
