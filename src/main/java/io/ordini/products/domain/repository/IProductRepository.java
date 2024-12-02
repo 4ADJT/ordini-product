@@ -9,5 +9,5 @@ public interface IProductRepository {
   ProductModel save(ProductModel productModel);
   ProductModel findByName(String name);
   Page<ProductModel> findAllByName(String name, Pageable pageable);
-
+  Page<ProductModel> findAll(Pageable pageable);
 }

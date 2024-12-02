@@ -46,4 +46,9 @@ public class ProductRepositoryImpl implements IProductRepository {
     return products.map(mapper::toModel);
 
   }
+
+  @Override
+  public Page<ProductModel> findAll(Pageable pageable) {
+    return repository.findAll(pageable).map(mapper::toModel);
+  }
 }
