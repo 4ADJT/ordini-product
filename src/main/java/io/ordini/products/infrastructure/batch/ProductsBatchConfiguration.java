@@ -4,6 +4,9 @@ import io.awspring.cloud.s3.S3Template;
 import io.ordini.products.adapter.gateway.batch.ProductProcessor;
 import io.ordini.products.adapter.mapper.ProductMapper;
 import io.ordini.products.domain.model.ProductModel;
+import io.ordini.products.infrastructure.persistence.jpa.db.IProcessedFileJpaRepository;
+import io.ordini.products.infrastructure.persistence.jpa.db.IProductJpaRepository;
+import io.ordini.products.infrastructure.persistence.jpa.entity.ProcessedFileEntity;
 import io.ordini.products.infrastructure.persistence.jpa.entity.ProductEntity;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.AllArgsConstructor;
@@ -46,6 +49,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProductsBatchConfiguration {
   public final ProductMapper productMapper;
+  public final IProcessedFileJpaRepository processedFileRepository;
+  public final IProductJpaRepository productRepository;
 
   private final S3Client s3Client;
   private final S3Template s3Template;
@@ -111,7 +116,7 @@ public class ProductsBatchConfiguration {
   @StepScope
   public ItemProcessor<ProductModel, ProductEntity> productsProcessor(
       @Value("#{jobParameters['fileName']}") String fileName) {
-    return new ProductProcessor(productMapper) {
+    return new ProductProcessor(productMapper, productRepository) {
       @Override
       public ProductEntity process(ProductModel productModel) throws Exception {
         productModel.setSourceFile(fileName.replace(PREFIX + "/", ""));
@@ -149,6 +154,13 @@ public class ProductsBatchConfiguration {
 
     fileMappings.forEach((fileKey, resource) -> {
       try {
+
+        processedFileRepository.findAll().forEach(processedFile -> {
+          if (processedFile.getFileName().equals(resource.getFilename().replace(PREFIX + "/", ""))) {
+            throw new IllegalArgumentException("O arquivo " + resource.getFilename() + " já foi processado.");
+          }
+        });
+
         JobParameters jobParameters = new JobParametersBuilder()
             .addString("fileName", Objects.requireNonNull(resource.getFilename()))
             .addString("jobId", UUID.randomUUID().toString())
@@ -156,6 +168,10 @@ public class ProductsBatchConfiguration {
 
         jobLauncher.run(productsJob(null, null), jobParameters);
         log.info("Job executado com sucesso para o arquivo: {}", resource.getFilename());
+
+        processedFileRepository.save(ProcessedFileEntity.builder()
+            .fileName(resource.getFilename().replace(PREFIX + "/", ""))
+            .build());
       } catch (Exception e) {
         log.error("Erro ao executar o job para o arquivo: {}, {}", resource.getFilename(), e.getMessage());
       }
