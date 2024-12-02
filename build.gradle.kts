@@ -13,7 +13,7 @@ java {
     }
 }
 
-val springdocVersion = "2.6.0"
+val springdocVersion = "2.7.0"
 val mapstructVersion = "1.6.3"
 val mapstructLombokBindingVersion = "0.2.0"
 val awsSdkVersion = "3.0.0"
@@ -36,6 +36,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.mapstruct:mapstruct:$mapstructVersion")
