@@ -1,6 +1,5 @@
 package io.ordini.products.infrastructure.batch;
 
-import io.awspring.cloud.s3.S3Template;
 import io.ordini.products.adapter.gateway.batch.ProductProcessor;
 import io.ordini.products.adapter.mapper.ProductMapper;
 import io.ordini.products.domain.model.ProductModel;
@@ -25,28 +24,20 @@ import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.InputStreamResource;
+
 import org.springframework.core.io.Resource;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Configuration
 @AllArgsConstructor
 public class ProductsBatchConfiguration {
   public final ProductMapper productMapper;
 
-  private final S3Template s3Template;
-
   private final S3Client s3Client;
-
-  private static final String BUCKET_NAME = "ordini";
-  private static final String PREFIX = "products";
 
   @Bean
   public Job productsJob(JobRepository jobRepository,
@@ -77,7 +68,9 @@ public class ProductsBatchConfiguration {
   public ItemReader<ProductModel> productsReader() {
     MultiResourceItemReader<ProductModel> multiResourceItemReader = new MultiResourceItemReader<>();
 
-    List<Resource> resources = getResourcesFromS3();
+    GetResourceFromS3 getResource = new GetResourceFromS3(s3Client);
+
+    List<Resource> resources = getResource.getResourcesFromS3();
 
     multiResourceItemReader.setResources(resources.toArray(new Resource[0]));
 
@@ -88,33 +81,12 @@ public class ProductsBatchConfiguration {
         .delimiter(";")
         .names("name", "description", "price", "stock", "currency")
         .targetType(ProductModel.class)
+
         .build();
 
     multiResourceItemReader.setDelegate(flatFileItemReader);
+
     return multiResourceItemReader;
-  }
-
-  private List<Resource> getResourcesFromS3() {
-    ListObjectsV2Request request = ListObjectsV2Request.builder()
-        .bucket(BUCKET_NAME)
-        .prefix(PREFIX)
-        .build();
-
-    return s3Client.listObjectsV2(request)
-        .contents()
-        .stream()
-        .map(S3Object::key)
-        .map(key -> {
-          return new InputStreamResource(
-              s3Client.getObject(builder -> builder.bucket(BUCKET_NAME).key(key))
-          ) {
-            @Override
-            public String getFilename() {
-              return key;
-            }
-          };
-        })
-        .collect(Collectors.toList());
   }
 
   @Bean
