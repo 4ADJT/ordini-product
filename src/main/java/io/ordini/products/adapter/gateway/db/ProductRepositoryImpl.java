@@ -12,6 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
+
+import java.util.UUID;
 
 @Repository
 @AllArgsConstructor
@@ -50,5 +53,18 @@ public class ProductRepositoryImpl implements IProductRepository {
   @Override
   public Page<ProductModel> findAll(Pageable pageable) {
     return repository.findAll(pageable).map(mapper::toModel);
+  }
+
+  @Override
+  public ProductModel findById(UUID id) {
+    return repository.findById(id).map(mapper::toModel).orElse(null);
+  }
+
+  @Override
+  public ProductModel update(ProductModel productModel, int quantity) {
+
+    ProductEntity product = repository.save(mapper.toEntity(productModel));
+
+    return mapper.toModel(product);
   }
 }

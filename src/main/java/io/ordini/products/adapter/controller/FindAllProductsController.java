@@ -25,7 +25,7 @@ public class FindAllProductsController {
 
   private final FindAllProductsUseCase findAllProductsUseCase;
 
-  @GetMapping(value = "/find-all", produces = "application/json")
+  @GetMapping(value = "/all", produces = "application/json")
   @Operation(summary = "Find all products", description = "Find all products.")
   public ResponseEntity<PagedModel<ProductPresenter.ProductResponse>> findAllProducts(
       @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC, page = 0)
