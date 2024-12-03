@@ -1,5 +1,5 @@
 networks:
-  ordini_product_network:
+  ordini_network:
     driver: bridge
 
 volumes:
@@ -29,7 +29,7 @@ services:
       start_period: 30s
       timeout: 10s
     networks:
-      - ordini_product_network
+      - ordini_network
     volumes:
       - ordini_product_db_data:/var/lib/postgresql/data
 
@@ -55,4 +55,4 @@ services:
       postgresdbproduct:
         condition: service_healthy
     networks:
-      - ordini_product_network
+      - ordini_network
