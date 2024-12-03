@@ -6,7 +6,7 @@ volumes:
   ordini_product_db_data:
 
 services:
-  postgresdbproduct:
+  postgres_db_product:
     image: postgres:latest
     container_name: ordini_postgres_product
     restart: on-failure
@@ -52,7 +52,7 @@ services:
       AWS_REGION: ${AWS_REGION}
       AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT}
     depends_on:
-      postgresdbproduct:
+      postgres_db_product:
         condition: service_healthy
     networks:
       - ordini_network
