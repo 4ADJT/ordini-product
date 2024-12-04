@@ -6,6 +6,9 @@ import io.ordini.products.domain.model.ProductModel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,20 +25,23 @@ public class FindProductByNameController {
 
   @GetMapping(value = "/find-name/{name}", produces = "application/json")
   @Operation(summary = "Find product by name", description = "Find product by name.")
-  public ResponseEntity<ProductPresenter.ProductResponse> findProductByName(@PathVariable String name) {
-    ProductModel product = findProductByNameUseCase.execute(name);
+  public ResponseEntity<PagedModel<ProductPresenter.ProductResponse>> findProductByName(@PathVariable String name,
+                                                                                        Pageable pageable) {
+    Page<ProductModel> product = findProductByNameUseCase.execute(name, pageable);
 
-    ProductPresenter.ProductResponse response = ProductPresenter.ProductResponse.builder()
-        .id(product.getId())
-        .name(product.getName())
-        .description(product.getDescription())
-        .price(product.getPrice())
-        .stock(product.getStock())
-        .currency(product.getCurrency())
-        .createdAt(product.getCreatedAt())
-        .build();
+    Page<ProductPresenter.ProductResponse> products = product.map(productModel ->
+        ProductPresenter.ProductResponse.builder()
+            .id(productModel.getId())
+            .name(productModel.getName())
+            .description(productModel.getDescription())
+            .price(productModel.getPrice())
+            .stock(productModel.getStock())
+            .currency(productModel.getCurrency())
+            .createdAt(productModel.getCreatedAt())
+            .build());
 
-    return ResponseEntity.ok().body(response);
+    return ResponseEntity.status(200).body(new PagedModel<>(products));
+
   }
 
 

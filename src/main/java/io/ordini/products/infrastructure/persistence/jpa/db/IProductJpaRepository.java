@@ -9,8 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.UUID;
 
 public interface IProductJpaRepository extends JpaRepository<ProductEntity, UUID> {
+  @Query("SELECT p FROM ProductEntity p WHERE UPPER(p.name) LIKE %?1%")
   ProductEntity findByName(String name);
 
-  @Query("SELECT p FROM ProductEntity p WHERE UPPER(p.name) LIKE %:name%")
+  @Query("SELECT p FROM ProductEntity p WHERE UPPER(p.name) LIKE %?1%")
   Page<ProductEntity> findAllByName(String name, Pageable pageable);
 }
